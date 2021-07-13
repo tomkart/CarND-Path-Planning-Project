@@ -111,73 +111,36 @@ int main() {
 	 	  }
 
 		  bool too_close = false;
-          bool car_left= false;
-		  bool car_right = false;
-		  bool car_ahead = false;
+
 		  //find ref_v to use
 		  for(int i = 0; i < sensor_fusion.size(); i++)
 		  {
 		  	// car is in my lane
 			float d = sensor_fusion[i][6];
-            //std::cout << d << "\n";
+			if(d < (2+4*lane+2) && d > (2+4*lane-2))
+			{
+				double vx = sensor_fusion[i][3];
+				double vy = sensor_fusion[i][4];
+				double check_speed = sqrt(vx*vx+vy*vy);
+				double check_car_s = sensor_fusion[i][5];	
 
-            int check_car_lane;
+				// project s value				
+				check_car_s+=((double)prev_size*0.02*check_speed);
 
-            if(d > 0 && d < 4) 
-            {
-			    check_car_lane = 0;
-			} 
-            else if(d > 4 && d < 8) 
-            {
-				check_car_lane = 1;
-			} 
-                else if(d > 8 and d < 12) 
-            {
-				check_car_lane = 2;
-			} 	
+				if((check_car_s > car_s) && ((check_car_s-car_s) < 30))
+				{
+					//ref_vel = 29.5;
+				
+					too_close = true;
+				}		
 
-			
-			double vx = sensor_fusion[i][3];
-			double vy = sensor_fusion[i][4];
-			double check_speed = sqrt(vx*vx+vy*vy);
-			double check_car_s = sensor_fusion[i][5];	
-
-			// project s value				
-			check_car_s+=((double)prev_size*0.02*check_speed);
-
-            bool check_car = ((check_car_s > car_s) && ((check_car_s-car_s) < 30));
-
-            //std::cout << "check:" << d << "," << check_car_lane << "," << lane << "," << check_car << "\n";
-            if(check_car_lane == lane) 
-            {
-			    //A vehicle is on the same lane
-				car_ahead |= check_car;										
-
-			} 
-            else if((check_car_lane - lane) == -1) 
-            {
-				//A vehicle is on the left lane 
-				car_left |= check_car;
-
-			} 
-            else if((check_car_lane - lane) == 1) 
-            {
-				//A vehicle is on the right lane
-				car_right |= check_car;
-							
-			}		
-			
+			}
 
 		  }
-          std::cout << car_left << "," << car_ahead << "," << car_right << "\n";
-		  if(car_ahead)
+
+		  if(too_close)
 		  {
 		  	ref_vel -= 0.224;
-            //change to left first if possible, otherwise check whether right is possible
-            if(!car_left && (lane > 0)) 
-                lane = lane - 1;
-            else if (!car_right && (lane < 2))
-                lane = lane + 1; 
  		  }
 		  else if (ref_vel < 49.5)
 		  {
