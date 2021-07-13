@@ -106,71 +106,71 @@ Telemetry and sensor fusion data were used to detect the position of the other c
 
           // Sensor Fusion Data, a list of all other cars on the same side 
           //   of the road.
-          auto sensor_fusion = j[1]["sensor_fusion"];
+	auto sensor_fusion = j[1]["sensor_fusion"];
 
-		  int prev_size = previous_path_x.size();
+	int prev_size = previous_path_x.size();
 
-		  // avoiding 
-		  if(prev_size > 0) 
-		  {
-			car_s = end_path_s;
-	 	  }
+	// avoiding 
+	if(prev_size > 0) 
+	{
+		car_s = end_path_s;
+	}
 
-		  bool too_close = false;
-        bool car_left= false;
-		  bool car_right = false;
-		  bool car_ahead = false;
-		  //find ref_v to use
-		  for(int i = 0; i < sensor_fusion.size(); i++)
-		  {
-           // car is in my lane
-			  float d = sensor_fusion[i][6];
-           //std::cout << d << "\n";
+	bool too_close = false;
+	bool car_left= false;
+	bool car_right = false;
+	bool car_ahead = false;
+	//find ref_v to use
+	for(int i = 0; i < sensor_fusion.size(); i++)
+	{
+		// car is in my lane
+		float d = sensor_fusion[i][6];
+		//std::cout << d << "\n";
 
-            int check_car_lane;
+		int check_car_lane;
 
-            if(d > 0 && d < 4) 
-            {
-			     check_car_lane = 0;
-			   } 
-            else if(d > 4 && d < 8) 
-            {
-				  check_car_lane = 1;
-			   } 
-            else if(d > 8 and d < 12) 
-            {
-				  check_car_lane = 2;
-			   } 	
+		if(d > 0 && d < 4) 
+		{
+			check_car_lane = 0;
+		} 
+		else if(d > 4 && d < 8) 
+		{
+			check_car_lane = 1;
+		} 
+		else if(d > 8 and d < 12) 
+		{
+			check_car_lane = 2;
+		} 	
 
-			
-            double vx = sensor_fusion[i][3];
-            double vy = sensor_fusion[i][4];
-            double check_speed = sqrt(vx*vx+vy*vy);
-            double check_car_s = sensor_fusion[i][5];	
 
-            // project s value				
-            check_car_s+=((double)prev_size*0.02*check_speed);
+		double vx = sensor_fusion[i][3];
+		double vy = sensor_fusion[i][4];
+		double check_speed = sqrt(vx*vx+vy*vy);
+		double check_car_s = sensor_fusion[i][5];	
 
-            bool check_car = ((check_car_s > car_s) && ((check_car_s-car_s) < 30));
+		// project s value				
+		check_car_s+=((double)prev_size*0.02*check_speed);
 
-            //std::cout << "check:" << d << "," << check_car_lane << "," << lane << "," << check_car << "\n";
-            if(check_car_lane == lane) 
-            {
-               //A vehicle is on the same lane
-               car_ahead |= check_car;										
+		bool check_car = ((check_car_s > car_s) && ((check_car_s-car_s) < 30));
 
-			   } 
-            else if((check_car_lane - lane) == -1) 
-            {
-               //A vehicle is on the left lane 
-               car_left |= check_car;
-			   } 
-            else if((check_car_lane - lane) == 1) 
-            {
-               //A vehicle is on the right lane
-               car_right |= check_car;			
-			    }				
-		  }
+		//std::cout << "check:" << d << "," << check_car_lane << "," << lane << "," << check_car << "\n";
+		if(check_car_lane == lane) 
+		{
+			//A vehicle is on the same lane
+			car_ahead |= check_car;										
+
+		} 
+		else if((check_car_lane - lane) == -1) 
+		{
+			//A vehicle is on the left lane 
+			car_left |= check_car;
+		} 
+		else if((check_car_lane - lane) == 1) 
+		{
+			//A vehicle is on the right lane
+			car_right |= check_car;			
+		}				
+	}
 ```
 
 
@@ -201,60 +201,60 @@ The coordinates are transformed back to local car coordinates at the end of the 
 
 main.cpp line 241 to line 296
 ```javascript
-         for ( int i = 0; i < ptsx.size(); i++ ) 
-			{
-              double shift_x = ptsx[i] - ref_x;
-              double shift_y = ptsy[i] - ref_y;
+	for ( int i = 0; i < ptsx.size(); i++ ) 
+	{
+		double shift_x = ptsx[i] - ref_x;
+		double shift_y = ptsy[i] - ref_y;
 
-              ptsx[i] = shift_x * cos(0 - ref_yaw) - shift_y * sin(0 - ref_yaw);
-              ptsy[i] = shift_x * sin(0 - ref_yaw) + shift_y * cos(0 - ref_yaw);
-			}
+		ptsx[i] = shift_x * cos(0 - ref_yaw) - shift_y * sin(0 - ref_yaw);
+		ptsy[i] = shift_x * sin(0 - ref_yaw) + shift_y * cos(0 - ref_yaw);
+	}
 
-			// Create the spline.
-         tk::spline s;
+	// Create the spline.
+	tk::spline s;
 
-			s.set_points(ptsx, ptsy);
+	s.set_points(ptsx, ptsy);
 
-			// Define the actual points			
-			vector<double> next_x_vals;
-         vector<double> next_y_vals;
-            
-			// Start with all of the pre path
-			for ( int i = 0; i < previous_path_x.size(); i++ ) 
-			{
-              next_x_vals.push_back(previous_path_x[i]);
-              next_y_vals.push_back(previous_path_y[i]);
-         }
+	// Define the actual points			
+	vector<double> next_x_vals;
+	vector<double> next_y_vals;
 
-         // Cal our desired ref velocity
-			double target_x = 30.0;
-         double target_y = s(target_x);
-         double target_dist = sqrt(target_x*target_x + target_y*target_y);
+	// Start with all of the pre path
+	for ( int i = 0; i < previous_path_x.size(); i++ ) 
+	{
+		next_x_vals.push_back(previous_path_x[i]);
+		next_y_vals.push_back(previous_path_y[i]);
+	}
 
-         double x_add_on = 0;
+	// Cal our desired ref velocity
+	double target_x = 30.0;
+	double target_y = s(target_x);
+	double target_dist = sqrt(target_x*target_x + target_y*target_y);
 
-			// Fill up the rest of our path planner
-			for( int i = 1; i <= 50 - previous_path_x.size(); i++ ) 
-			{
-              
-             
-			     double N = (target_dist/((0.02*ref_vel)/2.24));
-              double x_point = x_add_on + (target_x)/N;
-              double y_point = s(x_point);
+	double x_add_on = 0;
 
-              x_add_on = x_point;
+	// Fill up the rest of our path planner
+	for( int i = 1; i <= 50 - previous_path_x.size(); i++ ) 
+	{
 
-              double x_ref = x_point;
-              double y_ref = y_point;
 
-			     //Rotate back to normal after rotating it earlier
-              x_point = (x_ref * cos(ref_yaw) - y_ref * sin(ref_yaw));
-              y_point = (x_ref * sin(ref_yaw) + y_ref * cos(ref_yaw));
+		double N = (target_dist/((0.02*ref_vel)/2.24));
+		double x_point = x_add_on + (target_x)/N;
+		double y_point = s(x_point);
 
-              x_point += ref_x;
-              y_point += ref_y;
+		x_add_on = x_point;
 
-              next_x_vals.push_back(x_point);
-              next_y_vals.push_back(y_point);
-			}
+		double x_ref = x_point;
+		double y_ref = y_point;
+
+		//Rotate back to normal after rotating it earlier
+		x_point = (x_ref * cos(ref_yaw) - y_ref * sin(ref_yaw));
+		y_point = (x_ref * sin(ref_yaw) + y_ref * cos(ref_yaw));
+
+		x_point += ref_x;
+		y_point += ref_y;
+
+		next_x_vals.push_back(x_point);
+		next_y_vals.push_back(y_point);
+	}
 '''
