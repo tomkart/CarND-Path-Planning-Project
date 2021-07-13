@@ -93,7 +93,7 @@ A really helpful resource for doing this project and creating smooth trajectorie
     ```
 ## Result
 Keep the car under speed limit, and find a lane to change to if there is a car in front.
-'''javascript
+```javascript
 if(car_ahead)
 {
    ref_vel -= 0.224;
@@ -108,5 +108,5 @@ else if (ref_vel < 49.5)
 {
     ref_vel += 0.224;
 }
-'''
+```
 ![Path Planning result](img/path-planning-result.png)
