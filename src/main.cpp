@@ -34,7 +34,7 @@ int main() {
   int lane = 1;
 
   // ref velocity to target, mph
-  double ref_vel = 49.5;
+  double ref_vel = 0;
 
 
   std::ifstream in_map_(map_file_.c_str(), std::ifstream::in);
@@ -129,15 +129,23 @@ int main() {
 
 				if((check_car_s > car_s) && ((check_car_s-car_s) < 30))
 				{
-					ref_vel = 29.5;
-
+					//ref_vel = 29.5;
 				
+					too_close = true;
 				}		
 
 			}
 
 		  }
 
+		  if(too_close)
+		  {
+		  	ref_vel -= 0.224;
+ 		  }
+		  else if (ref_vel < 49.5)
+		  {
+		  	ref_vel += 0.224;
+		  }
 		  // end avoiding
 		
 		  // a list of (x,y) waypoints
